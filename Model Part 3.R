@@ -219,6 +219,7 @@ V12_end_dates_D = mclapply(long_outcome_D, function(x) visit12_end_date(x), mc.c
   
   return(outcome_cohort)
 }
+
 visit12_incident_tb_deterministic <- function(outcome_cohort,visit_end_date, Daily_Incidence_Rates) {
   
   outcome_cohort$expected_incidence_y1_12_art <- 0
@@ -253,7 +254,6 @@ visit12_incident_tb_deterministic <- function(outcome_cohort,visit_end_date, Dai
   
   return(outcome_cohort)
 }
-
 
 #Update incidence
 for(a in 1:nsims){
@@ -456,10 +456,10 @@ long_outcome_D_TB[[4]] %>% group_by(CD4) %>% summarise(mean(expected_incidence_t
 
 # calculate total incidence in each year:
 #y1, absolute incidence with individual algorithms
-summary(unlist(lapply(long_outcome_A_TB, function(x) sum(x$expected_incidence_y1))))
-summary(unlist(lapply(long_outcome_B_TB, function(x) sum(x$expected_incidence_y1))))
-summary(unlist(lapply(long_outcome_C_TB, function(x) sum(x$expected_incidence_y1))))
-summary(unlist(lapply(long_outcome_D_TB, function(x) sum(x$expected_incidence_y1))))
+summary(unlist(lapply(long_outcome_A_TB, function(x) sum(x$expected_incidence_y1)/dim(x)[1])))
+summary(unlist(lapply(long_outcome_B_TB, function(x) sum(x$expected_incidence_y1)/dim(x)[1])))
+summary(unlist(lapply(long_outcome_C_TB, function(x) sum(x$expected_incidence_y1)/dim(x)[1])))
+summary(unlist(lapply(long_outcome_D_TB, function(x) sum(x$expected_incidence_y1)/dim(x)[1])))
 
 par(mfrow=c(1,4))
 hist(unlist(lapply(long_outcome_A_TB, function(x) sum(x$expected_incidence_y1))))

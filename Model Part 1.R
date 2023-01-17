@@ -58,7 +58,7 @@ Stop_Days = vector("list", length = nsims)
 for(a in 1:nsims){
   
   #modify such that everyone completes TPT 
-  TPT_Stop_Day = round(rexp(ncohort, rate = (TPT_Rate[a]/30)),0)
+  TPT_Stop_Day = round(rexp(ncohort, rate = ((abs(TPT_Rate[a]-ART_Rate[a]))/30)),0)
   TPT_Stop_Day[which(TPT_Stop_Day>730)]<-730
   #TPT_Stop_Day = rep(730,ncohort)
   ART_Stop_Day = round(rexp(ncohort, rate = (ART_Rate[a]/30)),0)
@@ -122,7 +122,7 @@ for (j in 1:nsims){
     if(cohort[i,"Sx"] == "Sx+"){
       
       if(runif(1)<.5){
-        outcome_cohort[i,"ART"] = 
+        outcome_cohort[i,"ART"] = TRUE
           outcome_cohort[i,"Day_ART"] = 0
       }
       
@@ -149,10 +149,17 @@ for (j in 1:nsims){
               
             }
             else if(cohort[i,"Xpert"] == "Xpert-"){
+              if(is.na(outcome_cohort[i,"ART"])){
+                outcome_cohort[i,"ART"] = TRUE
+                outcome_cohort[i,"Day_ART"] = t
+              }
+              
               #Probability of considering TPT at visit 2
               if(runif(1)*100<((parameter_dist_1$Pp1n[j]/100)*(parameter_dist_1$RRp2n[j]/100)*100)){
                 outcome_cohort[i,"TPT"] = TRUE
                 outcome_cohort[i,"Day_TPT"] = t
+               
+                
               
               }
               
@@ -286,16 +293,7 @@ Diagnosed_Total = do.call(rbind,lapply(outcome_cohort_A, function(x) length(whic
 eval_outcomes_A = as.data.frame(cbind(Treatment,Treatment_60,ART,ART_60,TPT,TPT_60,Diagnosed,Treatment_Total_60 ,TPT_Total_60,Diagnosed_Total))
 colnames(eval_outcomes_A) = c("Treatment for TB","Treatment <60d for TB","ART for No TB","ART <60d for No TB","TPT for No TB","TPT <60d for No TB","Diagnosed TB","Total Treatment","Total TPT","Total Diagnosed")
 
-summary(do.call(rbind,lapply(outcome_cohort_D, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB"))) - (do.call(rbind,lapply(outcome_cohort_A, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB")))))
-summary(do.call(rbind,lapply(outcome_cohort_D, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB"))) - (do.call(rbind,lapply(outcome_cohort_B, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB")))))
-summary(do.call(rbind,lapply(outcome_cohort_D, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB"))) - (do.call(rbind,lapply(outcome_cohort_C, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB")))))
-summary(do.call(rbind,lapply(outcome_cohort_C, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB"))) - (do.call(rbind,lapply(outcome_cohort_A, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB")))))
 
-
-summary(do.call(rbind,lapply(outcome_discon_d, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))) - do.call(rbind,lapply(outcome_discon_a, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))))
-summary(do.call(rbind,lapply(outcome_discon_d, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))) - do.call(rbind,lapply(outcome_discon_b, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))))
-summary(do.call(rbind,lapply(outcome_discon_d, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))) - do.call(rbind,lapply(outcome_discon_c, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))))
-summary(do.call(rbind,lapply(outcome_discon_c, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))) - do.call(rbind,lapply(outcome_discon_b, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))))
 #Diagnostic evaluations 
 
 symp = do.call(rbind, lapply(outcome_cohort_A, function(x) length(which(x[,"Sx_Screen"] == 1))))
@@ -606,10 +604,14 @@ for(j in 1:nsims){
               }
             }
             else if(cohort[i,"Xpert"] == "Xpert-"){
+              outcome_cohort[i,"ART"] = TRUE
+              outcome_cohort[i,"Day_ART"] = t
+              
               #Probability of considering TPT at visit 2
               if(runif(1)*100<((parameter_dist_1$Pp1n[j]/100)*(parameter_dist_1$RRp2n[j]/100)*100)){
                 outcome_cohort[i,"TPT"] = TRUE
                 outcome_cohort[i,"Day_TPT"] = t
+                
                 
               }
             }
@@ -805,11 +807,13 @@ for(j in 1:nsims){
     if(cohort[i,"Sx"] == "Sx+"){
       
       if(runif(1)<.5){
-        outcome_cohort[i,"ART"] = 
+        outcome_cohort[i,"ART"] = TRUE
           outcome_cohort[i,"Day_ART"] = 0
       }
       
     }
+    
+ 
 
     #Probability of universal xpert screen 
     
@@ -831,6 +835,13 @@ for(j in 1:nsims){
             }
           }
           else if(cohort[i,"Xpert"] == "Xpert-"){
+            
+          
+            if(is.na(outcome_cohort[i,"ART"])){
+              outcome_cohort[i,"ART"] = TRUE
+              outcome_cohort[i,"Day_ART"] = t
+            }
+            
             
             if(runif(1)*100<((parameter_dist_1$Pp1n[j]/100)*(parameter_dist_1$RRp2n[j]/100)*100)){
               outcome_cohort[i,"TPT"] = TRUE
@@ -854,6 +865,10 @@ for(j in 1:nsims){
               }
             }
             else if(cohort[i,"Xpert"] == "Xpert-"){
+              if(is.na(outcome_cohort[i,"ART"])){
+                outcome_cohort[i,"ART"] = TRUE
+                outcome_cohort[i,"Day_ART"] = t
+              }
               
               if(runif(1)*100<((parameter_dist_1$Pp1n[j]/100)*(parameter_dist_1$RRp2n[j]/100)*100)){
                 outcome_cohort[i,"TPT"] = TRUE
@@ -1064,7 +1079,7 @@ for (j in 1:nsims){
     if(cohort[i,"Sx"] == "Sx+"){
       
       if(runif(1)<.5){
-        outcome_cohort[i,"ART"] = 
+        outcome_cohort[i,"ART"] = TRUE
           outcome_cohort[i,"Day_ART"] = 0
       }
       
@@ -1091,6 +1106,11 @@ for (j in 1:nsims){
           }
           else if(cohort[i,"Xpert"] == "Xpert-"){
             #Probability of continuing TPT? 
+            
+            if(is.na(outcome_cohort[i,"ART"])){
+              outcome_cohort[i,"ART"] = TRUE
+              outcome_cohort[i,"Day_ART"] = t
+            }
             
             if(t>31){
               if(runif(1)*100>parameter_dist_1$Ptcp[j]){
@@ -1120,6 +1140,10 @@ for (j in 1:nsims){
               }
             }
             else if(cohort[i,"Xpert"] == "Xpert-"){
+              if(is.na(outcome_cohort[i,"ART"])){
+                outcome_cohort[i,"ART"] = TRUE
+                outcome_cohort[i,"Day_ART"] = t
+              }
               
               if(runif(1)*100<((parameter_dist_1$Pp1n[j]/100)*(parameter_dist_1$RRp2n[j]/100)*100)){
                 outcome_cohort[i,"TPT"] = TRUE
@@ -1303,7 +1327,7 @@ figure_diag <- ggarrange(Diag_A, Diag_B, Diag_C,Diag_D,
 figure_unecessary <-ggarrange(Unecessary_A, Unecessary_B, Unecessary_C,Unecessary_D,
                               ncol = 1, nrow = 4)
 
-#Number treatment treated/TPT within 60 days
+#Number treatment treated/TPT within 60 days (Table 3)
 summary(do.call(rbind,lapply(outcome_cohort_D, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB")))-do.call(rbind,lapply(outcome_cohort_A, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB"))))
 summary(do.call(rbind,lapply(outcome_cohort_D, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB")))-do.call(rbind,lapply(outcome_cohort_B, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB"))))
 summary(do.call(rbind,lapply(outcome_cohort_D, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB")))-do.call(rbind,lapply(outcome_cohort_C, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB"))))
@@ -1315,9 +1339,55 @@ summary(do.call(rbind,lapply(outcome_discon_d, function(x) sum(x[,"TPT"]==1 & as
 summary(do.call(rbind,lapply(outcome_discon_d, function(x) sum(x[,"TPT"]==1 & as.numeric(as.character(x[,"Day_TPT"]))<=60 & x[,"TB"]=="No_TB")))-do.call(rbind,lapply(outcome_discon_c, function(x) sum(x[,"TPT"]==1 & as.numeric(as.character(x[,"Day_TPT"]))<=60 & x[,"TB"]=="No_TB"))))
 summary(do.call(rbind,lapply(outcome_discon_c, function(x) sum(x[,"TPT"]==1 & as.numeric(as.character(x[,"Day_TPT"]))<=60 & x[,"TB"]=="No_TB")))-do.call(rbind,lapply(outcome_discon_a, function(x) sum(x[,"TPT"]==1 & as.numeric(as.character(x[,"Day_TPT"]))<=60 & x[,"TB"]=="No_TB"))))
 
+
+
 summary(do.call(rbind, lapply(outcome_cohort_A, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 30)/sum(x[,"TB"]=="No_TB"))))
 summary(do.call(rbind, lapply(outcome_cohort_B, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 30)/sum(x[,"TB"]=="No_TB"))))
 summary(do.call(rbind, lapply(outcome_cohort_C, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 30)/sum(x[,"TB"]=="No_TB"))))
 summary(do.call(rbind, lapply(outcome_cohort_D, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 30)/sum(x[,"TB"]=="No_TB"))))
 
+summary(do.call(rbind, lapply(outcome_cohort_D, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 180)))-do.call(rbind, lapply(outcome_cohort_A, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 180))))
+summary(do.call(rbind, lapply(outcome_cohort_D, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 180)))-do.call(rbind, lapply(outcome_cohort_B, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 180))))
+summary(do.call(rbind, lapply(outcome_cohort_D, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 180)))-do.call(rbind, lapply(outcome_cohort_C, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 180))))
+summary(do.call(rbind, lapply(outcome_cohort_C, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 180)))-do.call(rbind, lapply(outcome_cohort_A, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 180))))
+
+
+summary(do.call(rbind,lapply(outcome_cohort_D, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB"))) - (do.call(rbind,lapply(outcome_cohort_A, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB")))))
+summary(do.call(rbind,lapply(outcome_cohort_D, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB"))) - (do.call(rbind,lapply(outcome_cohort_B, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB")))))
+summary(do.call(rbind,lapply(outcome_cohort_D, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB"))) - (do.call(rbind,lapply(outcome_cohort_C, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB")))))
+summary(do.call(rbind,lapply(outcome_cohort_C, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB"))) - (do.call(rbind,lapply(outcome_cohort_A, function(x) sum(x[,"Treatment"]==1 & as.numeric(as.character(x[,"Day_Treatment"]))<=60 & x[,"TB"]=="TB")))))
+
+
+summary(do.call(rbind,lapply(outcome_discon_d, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))) - do.call(rbind,lapply(outcome_discon_a, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))))
+summary(do.call(rbind,lapply(outcome_discon_d, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))) - do.call(rbind,lapply(outcome_discon_b, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))))
+summary(do.call(rbind,lapply(outcome_discon_d, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))) - do.call(rbind,lapply(outcome_discon_c, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))))
+summary(do.call(rbind,lapply(outcome_discon_c, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))) - do.call(rbind,lapply(outcome_discon_b, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))))
+
+
+#Table 2 Results
+summary(eval_outcomes_A$`Treatment <60d for TB`)
+summary(eval_outcomes_B$`Treatment <60d for TB`)
+summary(eval_outcomes_C$`Treatment <60d for TB`)
+summary(eval_outcomes_D$`Treatment <60d for TB`)
+
+
+summary(TPT_30_A)
+summary(TPT_30_B)
+summary(TPT_30_C)
+summary(TPT_30_D)
+
+summary(eval_outcomes_A$`TPT <60d for No TB`)
+summary(eval_outcomes_B$`TPT <60d for No TB`)
+summary(eval_outcomes_C$`TPT <60d for No TB`)
+summary(eval_outcomes_D$`TPT <60d for No TB`)
+
+summary(do.call(rbind, lapply(outcome_cohort_A, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 30)/sum(x[,"TB"]=="No_TB"))))
+summary(do.call(rbind, lapply(outcome_cohort_B, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 30)/sum(x[,"TB"]=="No_TB"))))
+summary(do.call(rbind, lapply(outcome_cohort_C, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 30)/sum(x[,"TB"]=="No_TB"))))
+summary(do.call(rbind, lapply(outcome_cohort_D, function(x) sum(x[,"TPT"]==1 & x[,"TB"]=="No_TB" & x[,"Day_TPT"] != "discontinued" & as.numeric(as.character(x[,"TPT_Stop_Day"])) > 30)/sum(x[,"TB"]=="No_TB"))))
+
+summary(Inappropriate_Therapy_A$`Treatment Incorrectly Given Without TB`)
+summary(Inappropriate_Therapy_B$`Treatment Incorrectly Given Without TB`)
+summary(Inappropriate_Therapy_C$`Treatment Incorrectly Given Without TB`)
+summary(Inappropriate_Therapy_D$`Treatment Incorrectly Given Without TB`)
         

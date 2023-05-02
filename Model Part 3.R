@@ -7,7 +7,7 @@ sourcelocation <- "~/Documents/JHU/IPT Model/"
 #  creates cohort_sims (a list of nsims dataframes, each with ncohort observations of 5 patient characteristic variables)
 source(paste0(sourcelocation,"Model Part 1.R"))
 
-ncohort = 1000
+ncohort = 5000
 nsims = 1000
 
 ncores=7
@@ -121,7 +121,7 @@ long_outcome_D = mclapply(outcome_D,create_long_outcome, mc.cores=ncores)
 #Create incidence matrix between visit 1 and 2
 #Read in incidence rates
 #Sensitvity Analysis, change Daily_Incidence_Rates csv to "Incidence_Rates_labeled_sensitivity.csv" and long_outcome_cohort$AL = 60  + long_outcome_cohort$Visit2 - long_outcome_cohort$ART1*pmin(long_outcome_cohort$Visit2,30) 
-Daily_Incidence_Rates = read.csv(paste0(sourcelocation, "Incidence_Rates_labeled.csv"), header = TRUE, fill = TRUE, row.names = 1)
+Daily_Incidence_Rates = read.csv(paste0(sourcelocation, "Incidence_Rates_labeled_sensitivity.csv"), header = TRUE, fill = TRUE, row.names = 1)
 colnames(Daily_Incidence_Rates) = c("100","100_200","200_350","350_500")
 Incidence_Multiplier = rtriangle(nsims,a = .8,b =1.2,c = 1)
 TPT_Multiplier = rtriangle(nsims, a = .8, b =1.2,c=1)
@@ -280,48 +280,48 @@ for(a in 1:nsims){
 #180  + long_outcome_cohort$Visit2 - long_outcome_cohort$ART1*pmin(long_outcome_cohort$Visit2,30)
 
 Vlong_end_date <-function(long_outcome_cohort){
-  long_outcome_cohort$AL = 180  + long_outcome_cohort$Visit2 - long_outcome_cohort$ART1*pmin(long_outcome_cohort$Visit2,30)  #long term ART
-  long_outcome_cohort$IE = 360 + long_outcome_cohort$Visit2 - long_outcome_cohort$TPT1*pmin(long_outcome_cohort$Visit2,30) #threshold for completed IPT
-  long_outcome_cohort$IP = 180  + long_outcome_cohort$Visit2 - long_outcome_cohort$TPT1*pmin(long_outcome_cohort$Visit2,30)#point at which you are still completed 
-  long_outcome_cohort$Tmax = 730 # total period of observation? 
-  long_outcome_cohort$AS =  long_outcome_cohort$ART_Stop_Day #Stop day ART? -should be counted from day 0
-  long_outcome_cohort$IS =  long_outcome_cohort$TPT_Stop_Day #Stop day TPT? -should be counted from day 0
-  
-  Vlong_end_date <- long_outcome_cohort %>% mutate(AI = case_when(is.na(Visit2) ~ 730,
-                                                ART2==1 & TPT2==1 ~ pmin(AL, AS, IE, IS) + Visit2,
-                                                TRUE ~ Visit2),
-                                 AC = case_when(is.na(Visit2) ~ 730,
-                                                ART2==1 & TPT2==1 & IP < pmin(IS,IE) & min(IS,IE)<AL~ pmin(IS, IE, AL) + AI,
-                                                TRUE ~ AI),
-                                 LI = case_when(is.na(Visit2) ~ 730,
-                                                ART2==1 & TPT2==1 & AL < pmin(IS,IE) & AL<AS ~ pmin(IS, IE, AS) + AC,
-                                                TRUE ~ AC),
-                                 LC = case_when(is.na(Visit2) ~ 730,
-                                                  ART2==1 & TPT2==1 & AL<AS & pmin(IS,IE)>AL & IP < pmin(IS,IE) ~ AS + LI,
-                                                  TRUE ~ LI),
-                                 A = case_when(is.na(Visit2) ~ 730,
-                                               (ART2==1 & TPT2==0) | (ART2==1 & TPT2==1 & IS<IP) ~ pmin(AS,AL) + LC,
-                                               TRUE ~ LC),
-                                 L = case_when(is.na(Visit2) ~ 730,
-                                               (ART2==1 & TPT2==0 & AL<AS) | 
-                                                 (ART2==1 & TPT2==1 & IS<IP & AL<AS) ~ AS + A,
-                                               TRUE ~ A),
-                                 I = case_when(is.na(Visit2) ~ 730,
-                                               (ART2==0 & TPT2==1) | 
-                                                 (ART2==1 & TPT2==1 & AS<IS) ~ IS + L,
-                                               TRUE ~ L),
-                                 C = case_when(is.na(Visit2) ~ 730,
-                                               (TPT2==1 & IP<pmin(IS,IE)) ~ Tmax,
-                                               TRUE ~ I),
-                                 nullL = case_when(is.na(Visit2) ~ 730,
-                                                   TRUE ~ Tmax)) %>%
-    select(AI, AC, LI, LC, A, L, I, C, nullL)
-
-    Vlong_end_date[Vlong_end_date >730]<- 730
-  
-  
-  return(Vlong_end_date)
-  
+ long_outcome_cohort$AL = 60  + long_outcome_cohort$Visit2 - long_outcome_cohort$ART1*pmin(long_outcome_cohort$Visit2,30)   #long term ART
+ long_outcome_cohort$IE = 360 + long_outcome_cohort$Visit2 - long_outcome_cohort$TPT1*pmin(long_outcome_cohort$Visit2,30) #threshold for completed IPT
+ long_outcome_cohort$IP = 180  + long_outcome_cohort$Visit2 - long_outcome_cohort$TPT1*pmin(long_outcome_cohort$Visit2,30)#point at which you are still completed 
+ long_outcome_cohort$Tmax = 730 # total period of observation? 
+ long_outcome_cohort$AS =  long_outcome_cohort$ART_Stop_Day #Stop day ART? -should be counted from day 0
+ long_outcome_cohort$IS =  long_outcome_cohort$TPT_Stop_Day #Stop day TPT? -should be counted from day 0
+ 
+ Vlong_end_date <- long_outcome_cohort %>% mutate(AI = case_when(is.na(Visit2) ~ 730,
+                                                                 ART2==1 & TPT2==1 ~ pmin(AL, AS, IE, IS) + Visit2,
+                                                                 TRUE ~ Visit2),
+                                                  AC = case_when(is.na(Visit2) ~ 730,
+                                                                 ART2==1 & TPT2==1 & IP < pmin(IS,IE) & min(IS,IE)<AL~ pmin(IS, IE, AL) + AI,
+                                                                 TRUE ~ AI),
+                                                  LI = case_when(is.na(Visit2) ~ 730,
+                                                                 ART2==1 & TPT2==1 & AL < pmin(IS,IE) & AL<AS ~ pmin(IS, IE, AS) + AC,
+                                                                 TRUE ~ AC),
+                                                  LC = case_when(is.na(Visit2) ~ 730,
+                                                                 ART2==1 & TPT2==1 & AL<AS & pmin(IS,IE)>AL & IP < pmin(IS,IE) ~ AS + LI,
+                                                                 TRUE ~ LI),
+                                                  A = case_when(is.na(Visit2) ~ 730,
+                                                                (ART2==1 & TPT2==0) | (ART2==1 & TPT2==1 & IS<IP) ~ pmin(AS,AL) + LC,
+                                                                TRUE ~ LC),
+                                                  L = case_when(is.na(Visit2) ~ 730,
+                                                                (ART2==1 & TPT2==0 & AL<AS) | 
+                                                                 (ART2==1 & TPT2==1 & IS<IP & AL<AS) ~ AS + A,
+                                                                TRUE ~ A),
+                                                  I = case_when(is.na(Visit2) ~ 730,
+                                                                (ART2==0 & TPT2==1) | 
+                                                                 (ART2==1 & TPT2==1 & AS<IS) ~ IS + L,
+                                                                TRUE ~ L),
+                                                  C = case_when(is.na(Visit2) ~ 730,
+                                                                (TPT2==1 & IP<pmin(IS,IE)) ~ Tmax,
+                                                                TRUE ~ I),
+                                                  nullL = case_when(is.na(Visit2) ~ 730,
+                                                                    TRUE ~ Tmax)) %>%
+  dplyr::select(AI, AC, LI, LC, A, L, I, C, nullL)
+ 
+ Vlong_end_date[Vlong_end_date >730]<- 730
+ 
+ 
+ return(Vlong_end_date)
+ 
 }
 
 Vlong_end_dates_A = mclapply(long_outcome_A, function(x) Vlong_end_date(x), mc.cores=ncores)
@@ -448,7 +448,7 @@ for(a in 1:nsims){
 
 
 
-# As above check that incidence rates are reasonable (Emily):
+# As above check that incidence rates are reasonable
 long_outcome_A_TB[[1]] %>% group_by(CD4) %>% summarise(mean(expected_incidence_total), mean(expected_incidence_y1))
 long_outcome_B_TB[[2]] %>% group_by(CD4) %>% summarise(mean(expected_incidence_total), mean(expected_incidence_y1))
 long_outcome_C_TB[[3]] %>% group_by(CD4) %>% summarise(mean(expected_incidence_total), mean(expected_incidence_y1))

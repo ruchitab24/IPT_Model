@@ -2,7 +2,7 @@
 sourcelocation <- "~/Documents/JHU/IPT Model/"
 library(reshape2)
 #Costing outline sketch 
-source(paste0(sourcelocation,"Model Part 3.R"))
+#source(paste0(sourcelocation,"Model Part 3.R"))
 
 #CNR = .61 (.43-.95) 
 #CNR = rtriangle(nsims,a = .61,b =.43,c = .95)
@@ -267,10 +267,10 @@ incident_per_cost_D = t_cost_D/incident_TB_D
 
 
 par(mfrow = c(1,4))
-hist(incident_per_cost_A,xlim = c(0,0.0015))
-hist(incident_per_cost_B,xlim = c(0,0.0015))
-hist(incident_per_cost_C,xlim = c(0,0.0015))
-hist(incident_per_cost_D,xlim = c(0,0.0015))
+#hist(incident_per_cost_A,xlim = c(0,0.0015))
+#hist(incident_per_cost_B,xlim = c(0,0.0015))
+#hist(incident_per_cost_C,xlim = c(0,0.0015))
+#hist(incident_per_cost_D,xlim = c(0,0.0015))
 
 #Incident TB cases 
 par(mfrow = c(1,4))
@@ -634,10 +634,10 @@ summary(do.call("rbind",lapply(long_outcome_D_TB,function(x) length(which(x$TPT_
 summary(do.call("rbind",lapply(long_outcome_D_TB,function(x) length(which(x$TPT_Stop_Day>180)))) - do.call("rbind",lapply(long_outcome_C_TB,function(x) length(which(x$TPT_Stop_Day>180)))))
 summary(do.call("rbind",lapply(long_outcome_C_TB,function(x) length(which(x$TPT_Stop_Day>180)))) - do.call("rbind",lapply(long_outcome_A_TB,function(x) length(which(x$TPT_Stop_Day>180)))))
 
-mean(1-(do.call("rbind",lapply(long_outcome_A_TB,function(x) length(which(x$TPT_Stop_Day>180))))/do.call("rbind", lapply(long_outcome_A_TB,function(x) length(which(x$TPT1 == 1 | x$TPT2 == 1))))))
-mean(1-(do.call("rbind",lapply(long_outcome_B_TB,function(x) length(which(x$TPT_Stop_Day>180))))/do.call("rbind", lapply(long_outcome_B_TB,function(x) length(which(x$TPT1 == 1 | x$TPT2 == 1))))))
-mean(1-(do.call("rbind",lapply(long_outcome_C_TB,function(x) length(which(x$TPT_Stop_Day>180))))/do.call("rbind", lapply(long_outcome_C_TB,function(x) length(which(x$TPT1 == 1 | x$TPT2 == 1))))))
-mean(1-(do.call("rbind",lapply(long_outcome_D_TB,function(x) length(which(x$TPT_Stop_Day>180))))/do.call("rbind", lapply(long_outcome_D_TB,function(x) length(which(x$TPT1 == 1 | x$TPT2 == 1))))))
+mean((do.call("rbind",lapply(long_outcome_A_TB,function(x) length(which(x$TPT_Stop_Day>180))))/do.call("rbind", lapply(long_outcome_A_TB,function(x) length(which(x$TPT1 == 1 | x$TPT2 == 1))))))
+mean((do.call("rbind",lapply(long_outcome_B_TB,function(x) length(which(x$TPT_Stop_Day>180))))/do.call("rbind", lapply(long_outcome_B_TB,function(x) length(which(x$TPT1 == 1 | x$TPT2 == 1))))))
+mean((do.call("rbind",lapply(long_outcome_C_TB,function(x) length(which(x$TPT_Stop_Day>180))))/do.call("rbind", lapply(long_outcome_C_TB,function(x) length(which(x$TPT1 == 1 | x$TPT2 == 1))))))
+mean((do.call("rbind",lapply(long_outcome_D_TB,function(x) length(which(x$TPT_Stop_Day>180))))/do.call("rbind", lapply(long_outcome_D_TB,function(x) length(which(x$TPT1 == 1 | x$TPT2 == 1))))))
 
 
 #Proportion completing 12 months of TPT 

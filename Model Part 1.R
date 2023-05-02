@@ -57,10 +57,11 @@ TPT_Rate = rtriangle(nsims,a = .04,b =.10,c = .07)
 Stop_Days = vector("list", length = nsims)
 for(a in 1:nsims){
   
-  #modify such that everyone completes TPT 
+  #modify such that everyone completes TPT and ART
   TPT_Stop_Day = round(rexp(ncohort, rate = ((abs(TPT_Rate[a]-ART_Rate[a]))/30)),0)
   TPT_Stop_Day[which(TPT_Stop_Day>730)]<-730
   #TPT_Stop_Day = rep(730,ncohort)
+  #ART_Stop_Day = rep(730,ncohort)
   ART_Stop_Day = round(rexp(ncohort, rate = (ART_Rate[a]/30)),0)
   ART_Stop_Day[which(ART_Stop_Day>730)]<-730
   Stop_Days[[a]] = cbind(TPT_Stop_Day,ART_Stop_Day)
@@ -128,6 +129,17 @@ for (j in 1:nsims){
       
     }
     
+    #If Visit 2 occurs, those with no TB initiate ART assuming they had not at visit 1
+    
+    if(!is.na(t)){
+      if(cohort[i,"TB"] == "No_TB"){
+        if(is.na(outcome_cohort[i,"ART"])){
+          outcome_cohort[i,"ART"] = TRUE
+          outcome_cohort[i,"Day_ART"] = t
+        }
+      }
+    }
+    
     #Probability of symptom screen 
     if(runif(1)*100<parameter_dist_1$Pss[j]){
       outcome_cohort[i,"Sx_Screen"] = TRUE
@@ -149,10 +161,7 @@ for (j in 1:nsims){
               
             }
             else if(cohort[i,"Xpert"] == "Xpert-"){
-              if(is.na(outcome_cohort[i,"ART"])){
-                outcome_cohort[i,"ART"] = TRUE
-                outcome_cohort[i,"Day_ART"] = t
-              }
+              
               
               #Probability of considering TPT at visit 2
               if(runif(1)*100<((parameter_dist_1$Pp1n[j]/100)*(parameter_dist_1$RRp2n[j]/100)*100)){
@@ -577,10 +586,35 @@ for(j in 1:nsims){
   
   outcome_cohort[,"t"] = t_value[[j]]
   
+  #All receive CRP Screen, CRP- get ART at first visit
+  outcome_cohort[which(cohort$CRP == "CRP-"),"ART"] = TRUE
+  outcome_cohort[which(cohort$CRP == "CRP-"),"Day_ART"] = 0
+  
   for(i in 1:ncohort){
     #sample visit2
     t = outcome_cohort[i,"t"]
     
+    
+    #50% CRP+ get ART at first visit (change?)
+    if(cohort[i,"CRP"] == "CRP+"){
+      
+      if(runif(1)<.5){
+        outcome_cohort[i,"ART"] = TRUE
+        outcome_cohort[i,"Day_ART"] = 0
+      }
+      
+    }
+    
+    #If Visit 2 occurs, those with no TB initiate ART assuming they had not at visit 1
+    
+    if(!is.na(t)){
+      if(cohort[i,"TB"] == "No_TB"){
+        if(is.na(outcome_cohort[i,"ART"])){
+          outcome_cohort[i,"ART"] = TRUE
+          outcome_cohort[i,"Day_ART"] = t
+        }
+      }
+    }
 
     #Probability of CRP screen 
     if(runif(1)*100<(parameter_dist_1$Pss[j]/100)*(parameter_dist_1$RRcs[j]/100)*100){
@@ -603,9 +637,7 @@ for(j in 1:nsims){
                 outcome_cohort[i,"Day_Treatment"] = t
               }
             }
-            else if(cohort[i,"Xpert"] == "Xpert-"){
-              outcome_cohort[i,"ART"] = TRUE
-              outcome_cohort[i,"Day_ART"] = t
+            else if(cohort[i,"Xpert"] == "Xpert-"){ 
               
               #Probability of considering TPT at visit 2
               if(runif(1)*100<((parameter_dist_1$Pp1n[j]/100)*(parameter_dist_1$RRp2n[j]/100)*100)){
@@ -634,8 +666,7 @@ for(j in 1:nsims){
       }
       else if (cohort[i,"CRP"] == "CRP-"){
         
-        outcome_cohort[i,"ART"] = TRUE
-        outcome_cohort[i,"Day_ART"] = 0
+  
         
         #Probability of starting TPT
         if(runif(1)*100<parameter_dist_1$Pp1n[j]){
@@ -813,7 +844,17 @@ for(j in 1:nsims){
       
     }
     
- 
+    
+    #If Visit 2 occurs, those with no TB initiate ART assuming they had not at visit 1
+    if(!is.na(t)){
+      if(cohort[i,"TB"] == "No_TB"){
+        if(is.na(outcome_cohort[i,"ART"])){
+          outcome_cohort[i,"ART"] = TRUE
+          outcome_cohort[i,"Day_ART"] = t
+        }
+      }
+    }
+    
 
     #Probability of universal xpert screen 
     
@@ -835,12 +876,6 @@ for(j in 1:nsims){
             }
           }
           else if(cohort[i,"Xpert"] == "Xpert-"){
-            
-          
-            if(is.na(outcome_cohort[i,"ART"])){
-              outcome_cohort[i,"ART"] = TRUE
-              outcome_cohort[i,"Day_ART"] = t
-            }
             
             
             if(runif(1)*100<((parameter_dist_1$Pp1n[j]/100)*(parameter_dist_1$RRp2n[j]/100)*100)){
@@ -865,10 +900,6 @@ for(j in 1:nsims){
               }
             }
             else if(cohort[i,"Xpert"] == "Xpert-"){
-              if(is.na(outcome_cohort[i,"ART"])){
-                outcome_cohort[i,"ART"] = TRUE
-                outcome_cohort[i,"Day_ART"] = t
-              }
               
               if(runif(1)*100<((parameter_dist_1$Pp1n[j]/100)*(parameter_dist_1$RRp2n[j]/100)*100)){
                 outcome_cohort[i,"TPT"] = TRUE
@@ -1084,6 +1115,17 @@ for (j in 1:nsims){
       }
       
     }
+    #If Visit 2 occurs, those with no TB initiate ART assuming they had not at visit 1
+    
+    if(!is.na(t)){
+      if(cohort[i,"TB"] == "No_TB"){
+        if(is.na(outcome_cohort[i,"ART"])){
+          outcome_cohort[i,"ART"] = TRUE
+          outcome_cohort[i,"Day_ART"] = t
+        }
+      }
+    }
+    
     
     #Probability of universal xpert screen 
     
@@ -1107,10 +1149,6 @@ for (j in 1:nsims){
           else if(cohort[i,"Xpert"] == "Xpert-"){
             #Probability of continuing TPT? 
             
-            if(is.na(outcome_cohort[i,"ART"])){
-              outcome_cohort[i,"ART"] = TRUE
-              outcome_cohort[i,"Day_ART"] = t
-            }
             
             if(t>31){
               if(runif(1)*100>parameter_dist_1$Ptcp[j]){
@@ -1140,10 +1178,6 @@ for (j in 1:nsims){
               }
             }
             else if(cohort[i,"Xpert"] == "Xpert-"){
-              if(is.na(outcome_cohort[i,"ART"])){
-                outcome_cohort[i,"ART"] = TRUE
-                outcome_cohort[i,"Day_ART"] = t
-              }
               
               if(runif(1)*100<((parameter_dist_1$Pp1n[j]/100)*(parameter_dist_1$RRp2n[j]/100)*100)){
                 outcome_cohort[i,"TPT"] = TRUE
@@ -1364,7 +1398,7 @@ summary(do.call(rbind,lapply(outcome_discon_d, function(x) sum(x[,"TPT"]==1 & x[
 summary(do.call(rbind,lapply(outcome_discon_c, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))) - do.call(rbind,lapply(outcome_discon_b, function(x) sum(x[,"TPT"]==1 & x[,"Day_TPT"]<=60 & x[,"TB"]=="No_TB"))))
 
 
-#Table 2 Results
+#Table 1 Results
 summary(eval_outcomes_A$`Treatment <60d for TB`)
 summary(eval_outcomes_B$`Treatment <60d for TB`)
 summary(eval_outcomes_C$`Treatment <60d for TB`)
